@@ -1,0 +1,6 @@
+{
+  "name": "NEXORA - Connect. Share. Discover",
+  "description": "A modern, premium social networking platform for personal profiles, social connections, posts, media sharing, messaging, groups, and personalized discovery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

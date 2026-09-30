@@ -1,0 +1,22 @@
+# Frontend dependencies and build output
+node_modules/
+build/
+dist/
+coverage/
+
+# Java / Maven build output
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Environment and secrets
+.env*
+!.env.example
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
