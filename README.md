@@ -61,23 +61,64 @@ Modern social platforms require high responsiveness for interactions, persistent
 
 ## Architecture
 
-NEXORA employs a decoupled layered architecture separating persistent storage, server-side business logic, WebSocket dispatchers, and reactive client components.
+NEXORA follows a decoupled layered architecture separating the client,
+API gateway, real-time communication layer, and PostgreSQL persistence.
 
-[ Web Browser / Mobile Client (React 19 + TypeScript + Vite)]
-│ │
-│ HTTP / REST │ WebSocket (/ws)
-▼ ▼
-[ Express Application Gateway & API Server (Node.js / tsx)]
-│ │
-├── Rate Limiting (In-Memory) ├── Heartbeat Monitor (25s ping/pong)
-├── JWT Authentication Middleware ├── Connection Map (userSockets)
-├── Multer Media Storage Handler └── Real-time Event Router
-│ │
-└────────────────┬─────────────────┘
-│
-▼ (Connection Pooling / Parameterized SQL)
-[ PostgreSQL Database (Neon Cluster)]
-
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│                         CLIENT TIER                                │
+│                                                                     │
+│  React 19 + TypeScript + Vite                                      │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Web Browser / Mobile Client                                  │  │
+│  │                                                               │  │
+│  │  • React Components                                           │  │
+│  │  • Local State / Optimistic UI                                │  │
+│  │  • REST API Client                                            │  │
+│  │  • WebSocket Client                                           │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                 ┌─────────────┴─────────────┐
+                 │                           │
+             HTTP/REST                  WebSocket
+                 │                           │
+                 ▼                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       APPLICATION TIER                              │
+│                                                                     │
+│  Node.js + Express + TypeScript                                    │
+│  ┌──────────────────────────────┐  ┌─────────────────────────────┐  │
+│  │ REST API Gateway             │  │ WebSocket Server            │  │
+│  │                              │  │                             │  │
+│  │ • JWT Authentication         │  │ • Connection Registry       │  │
+│  │ • Request Validation         │  │ • Authentication             │  │
+│  │ • Rate Limiting              │  │ • Heartbeat / Ping-Pong     │  │
+│  │ • File Uploads (Multer)      │  │ • Message Routing           │  │
+│  │ • API Controllers            │  │ • Typing Events             │  │
+│  └──────────────┬───────────────┘  └──────────────┬──────────────┘  │
+│                 │                                 │                 │
+│                 └────────────────┬────────────────┘                 │
+│                                  │                                  │
+│                         Parameterized SQL                            │
+└──────────────────────────────────┼──────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         PERSISTENCE TIER                            │
+│                                                                     │
+│                     PostgreSQL / Neon                               │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │  users   │  │  posts   │  │ conversations│  │   messages   │   │
+│  └──────────┘  └──────────┘  └──────────────┘  └──────────────┘   │
+│                                                                     │
+│  • Foreign Keys                                                     │
+│  • Constraints                                                      │
+│  • Indexes                                                          │
+│  • Transactions                                                      │
+│  • Connection Pooling                                               │
+└─────────────────────────────────────────────────────────────────────┘
 
 
 ### System Component Responsibilities
