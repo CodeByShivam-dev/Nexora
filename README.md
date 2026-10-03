@@ -119,7 +119,7 @@ API gateway, real-time communication layer, and PostgreSQL persistence.
 │  • Transactions                                                      │
 │  • Connection Pooling                                               │
 └─────────────────────────────────────────────────────────────────────┘
-
+```
 
 ### System Component Responsibilities
 
@@ -144,22 +144,85 @@ API gateway, real-time communication layer, and PostgreSQL persistence.
 
 > **Note**: The repository also includes a complete enterprise Java 17 / Spring Boot 3.3.4 microservice architecture located under `src/main/java/com/nexora` with Spring Security, Spring Data JPA, and Flyway migrations (`pom.xml`).
 
+
+Then replace your **Real-Time Messaging Architecture** section with:
+
+```text
 ## Real-Time Messaging Architecture
 
-The direct messaging subsystem is architected to decouple real-time socket transport from persistent relational storage.
+The direct messaging subsystem separates WebSocket transport from
+persistent PostgreSQL storage.
 
-
-[ Client A] [ Server Gateway] [ Client B]
-│ │ │
-│ ── 1. send_message (WS) ─────> │ │
-│ ├── 2. Verify Session │
-│ ├── 3. Persist to PostgreSQL │
-│ │ │
-│ <── 4. message_ack (WS) ───────┤ │
-│ │ ── 5. new_message (WS) ───> │
-│ │ <── 6. mark_delivered ─────┤
-│ <── 7. message_delivered ──────┤ │
-
+```text
+┌───────────────┐
+│   CLIENT A    │
+│               │
+│  React UI     │
+│  WebSocket    │
+└───────┬───────┘
+        │
+        │ 1. send_message
+        │
+        ▼
+┌───────────────────────────────────────┐
+│           NEXORA GATEWAY              │
+│                                       │
+│  ┌─────────────────────────────────┐  │
+│  │ WebSocket Handler               │  │
+│  │                                 │  │
+│  │ • Authenticate JWT              │  │
+│  │ • Validate conversation         │  │
+│  │ • Validate message payload      │  │
+│  │ • Apply rate limits             │  │
+│  └───────────────┬─────────────────┘  │
+│                  │                    │
+│                  │ 2. Persist         │
+│                  ▼                    │
+│  ┌─────────────────────────────────┐  │
+│  │ PostgreSQL                      │  │
+│  │                                 │  │
+│  │ messages                        │  │
+│  │ conversations                   │  │
+│  │ conversation_members            │  │
+│  └───────────────┬─────────────────┘  │
+│                  │                    │
+│                  │ 3. Database ACK    │
+│                  ▼                    │
+│  ┌─────────────────────────────────┐  │
+│  │ Message Dispatcher              │  │
+│  │                                 │  │
+│  │ userSockets                     │  │
+│  │ Map<UserId, WebSocket[]>        │  │
+│  └───────────────┬─────────────────┘  │
+└──────────────────┼────────────────────┘
+                   │
+          ┌────────┴────────┐
+          │                 │
+          │ 4. message_ack  │ 5. new_message
+          │                 │
+          ▼                 ▼
+┌───────────────┐   ┌───────────────┐
+│   CLIENT A    │   │   CLIENT B    │
+│               │   │               │
+│ Reconcile    │   │ Render message│
+│ temp message │   │               │
+└───────────────┘   └───────┬───────┘
+                            │
+                            │ 6. message_delivered
+                            ▼
+                    ┌──────────────────┐
+                    │ NEXORA GATEWAY   │
+                    └────────┬─────────┘
+                             │
+                             │ 7. delivered
+                             ▼
+                       ┌─────────────┐
+                       │  CLIENT A   │
+                       │             │
+                       │ sent →      │
+                       │ delivered   │
+                       └─────────────┘
+```
 
 ### Protocol & Flow Specifications
 
@@ -217,37 +280,104 @@ In-memory rate limiting applied per route category:
 | Direct Messaging | 30 requests / min |
 | Search | 60 requests / min |
 
+
 ## Database Design
 
-The schema is defined in PostgreSQL with relational integrity, foreign keys, and indexes.
+NEXORA uses PostgreSQL with foreign keys, composite constraints,
+indexes, and cascade rules to maintain relational integrity.
 
-┌──────────────┐ ┌──────────────┐
-│ users │1 ───────── 1│ profiles │
-└──────┬───────┘ └──────────────┘
-│1
-├───────────┐
-│ │
-│ │
-┌──────┴───────┐ ┌─┴────────────┐
-│ posts │ │ follows │
-└──────┬───────┘ └──────────────┘
-│1
-├───────────┐
-│ │
-│ │
-┌──────┴───────┐ ┌─┴────────────┐
-│ comments │ │ likes │
-└──────────────┘ └──────────────┘
+```text
+                         ┌─────────────────┐
+                         │      users      │
+                         │─────────────────│
+                         │ PK id           │
+                         │ username        │
+                         │ email           │
+                         │ password_hash   │
+                         │ role            │
+                         └────────┬────────┘
+                                  │
+                         1        │        1
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+          ┌─────────────────┐         ┌─────────────────┐
+          │    profiles     │         │      posts      │
+          │─────────────────│         │─────────────────│
+          │ PK user_id      │         │ PK id           │
+          │ display_name    │         │ FK author_id    │
+          │ bio             │         │ content         │
+          │ avatar_url      │         │ media_url       │
+          │ cover_image_url │         │ deleted         │
+          └─────────────────┘         └────────┬────────┘
+                                                │
+                                      1         │        *
+                                                │
+                              ┌─────────────────┴──────────────┐
+                              │                                │
+                              ▼                                ▼
+                    ┌─────────────────┐              ┌─────────────────┐
+                    │    comments     │              │      likes      │
+                    │─────────────────│              │─────────────────│
+                    │ PK id           │              │ PK/FK post_id  │
+                    │ FK post_id      │              │ PK/FK user_id  │
+                    │ FK author_id    │              └─────────────────┘
+                    │ parent_comment_id│
+                    │ content         │
+                    └─────────────────┘
 
-┌──────────────┐1 *┌──────────────┐
-│conversations │─────────────│conv_members │
-└──────┬───────┘ └──────────────┘
-│1
-│*
-┌──────┴───────┐
-│ messages │
-└──────────────┘
+                         users
+                           │
+                           │
+                           │ follower / following
+                           ▼
+                    ┌─────────────────┐
+                    │     follows     │
+                    │─────────────────│
+                    │ follower_id     │
+                    │ following_id    │
+                    │ UNIQUE pair     │
+                    │ No self-follow  │
+                    └─────────────────┘
 
+
+                    ┌──────────────────────┐
+                    │    conversations     │
+                    │──────────────────────│
+                    │ PK id                │
+                    │ created_at           │
+                    │ updated_at           │
+                    └──────────┬───────────┘
+                               │
+                         1     │     *
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │ conversation_members │
+                    │──────────────────────│
+                    │ FK conversation_id   │
+                    │ FK user_id           │
+                    │ joined_at            │
+                    │ read_at              │
+                    │ Composite PK         │
+                    └──────────┬───────────┘
+                               │
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │       messages       │
+                    │──────────────────────│
+                    │ PK id                │
+                    │ FK conversation_id   │
+                    │ FK sender_id         │
+                    │ content              │
+                    │ media_url            │
+                    │ client_message_id    │
+                    │ delivered_at         │
+                    │ read_at              │
+                    └──────────────────────┘
+```
 
 ### Entity Specifications
 
