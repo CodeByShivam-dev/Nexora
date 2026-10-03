@@ -517,58 +517,104 @@ indexes, and cascade rules to maintain relational integrity.
 
 ## Project Structure
 
+```text
 nexora/
-├── .env.example # Environment configuration template
-├── package.json # Full-stack dependencies & scripts
-├── tsconfig.json # TypeScript compiler configuration
-├── vite.config.ts # Vite client build configuration
-├── server.ts # Express gateway, API routes & WebSocket server
-├── pom.xml # Maven specification for Java Spring Boot backend
-├── uploads/ # Local media storage directory
-│ ├── posts/
-│ ├── profiles/
-│ └── covers/
+├── .env.example                         # Environment configuration template
+├── package.json                         # Full-stack dependencies & scripts
+├── tsconfig.json                        # TypeScript compiler configuration
+├── vite.config.ts                       # Vite client build configuration
+├── server.ts                            # Express gateway, API routes & WebSocket server
+├── pom.xml                              # Maven specification for Spring Boot backend
+│
+├── uploads/                             # Local media storage
+│   ├── posts/
+│   ├── profiles/
+│   └── covers/
+│
 ├── src/
-│ ├── assets/
-│ │ └── images/ # UI demo imagery & platform branding
-│ ├── components/ # Reusable UI component modules
-│ │ ├── MobileBottomNav.tsx # 44px+ mobile touch navigation
-│ │ ├── Modals.tsx # Dialogs & confirmations
-│ │ ├── Navbar.tsx # Universal top application header
-│ │ ├── PostCard.tsx # Feed post rendering & actions
-│ │ ├── PostComposer.tsx # Media-enabled post publisher
-│ │ ├── RightSidebar.tsx # Trending tags & suggestion widgets
-│ │ ├── Sidebar.tsx # Desktop & tablet navigation
-│ │ └── ToastContainer.tsx # Notification toast dispatchers
-│ ├── context/
-│ │ └── AppContext.tsx # Global application state & WebSocket listeners
-│ ├── pages/ # View routing components
-│ │ ├── HomeDashboard.tsx # Primary social overview
-│ │ ├── NewsFeedPage.tsx # Chronological feed stream
-│ │ ├── MessagesPage.tsx # Real-time chat & conversation view
-│ │ ├── ProfilePage.tsx # User profile & authored content
-│ │ ├── SearchPage.tsx # Multi-criteria user discovery
-│ │ ├── SettingsPage.tsx # Privacy, session & theme controls
-│ │ ├── LoginPage.tsx # Authentication portal
-│ │ ├── SignupPage.tsx # Account registration
-│ │ └── OtpVerifyPage.tsx # 2FA OTP verification
-│ ├── server/
-│ │ ├── db.ts # PostgreSQL connection pool & data access layer
-│ │ └── rateLimiter.ts # Route-level in-memory rate limiting
-│ ├── services/
-│ │ ├── api.ts # HTTP client & resilient WebSocket manager
-│ │ └── mockData.ts # Seed models & fallback structures
-│ └── types/
-│ └── index.ts # Shared TypeScript interfaces & types
-└── src/main/java/com/nexora/ # Enterprise Spring Boot 3 Backend
-├── NexoraApplication.java # Spring Boot application entry point
-├── auth/ # Spring Security & JWT controllers
-├── user/ # User domain entities & services
-├── post/ # Post publishing domain
-├── message/ # Message repositories & controllers
-├── comment/ # Post comment hierarchy
-└── config/ # Spring Web & Security filters
-
+│   │
+│   ├── assets/
+│   │   └── images/                      # UI demo imagery & platform branding
+│   │
+│   ├── components/                      # Reusable React components
+│   │   ├── MobileBottomNav.tsx          # Mobile navigation
+│   │   ├── Modals.tsx                   # Dialogs & confirmations
+│   │   ├── Navbar.tsx                   # Application header
+│   │   ├── PostCard.tsx                 # Feed post rendering
+│   │   ├── PostComposer.tsx             # Media-enabled post creation
+│   │   ├── RightSidebar.tsx             # Trending & suggestions
+│   │   ├── Sidebar.tsx                  # Desktop & tablet navigation
+│   │   └── ToastContainer.tsx           # Notification system
+│   │
+│   ├── context/
+│   │   └── AppContext.tsx               # Global state & WebSocket listeners
+│   │
+│   ├── pages/                           # Application pages
+│   │   ├── HomeDashboard.tsx            # Primary social dashboard
+│   │   ├── NewsFeedPage.tsx             # Chronological feed
+│   │   ├── MessagesPage.tsx             # Real-time messaging
+│   │   ├── ProfilePage.tsx              # User profile & posts
+│   │   ├── SearchPage.tsx               # User discovery
+│   │   ├── SettingsPage.tsx             # Account & privacy settings
+│   │   ├── LoginPage.tsx                # Authentication
+│   │   ├── SignupPage.tsx               # Account registration
+│   │   └── OtpVerifyPage.tsx            # OTP verification
+│   │
+│   ├── server/
+│   │   ├── db.ts                        # PostgreSQL connection & data access
+│   │   └── rateLimiter.ts               # Route-level rate limiting
+│   │
+│   ├── services/
+│   │   ├── api.ts                       # HTTP client & WebSocket manager
+│   │   └── mockData.ts                  # Seed & fallback data
+│   │
+│   ├── types/
+│   │   └── index.ts                     # Shared TypeScript types
+│   │
+│   └── main.tsx                         # React application entry point
+│
+└── src/main/java/com/nexora/            # Spring Boot 3 backend
+    ├── NexoraApplication.java           # Spring Boot entry point
+    │
+    ├── auth/                            # Authentication & JWT
+    │   ├── controller/
+    │   ├── dto/
+    │   ├── entity/
+    │   ├── repository/
+    │   └── service/
+    │
+    ├── user/                            # User domain
+    │   ├── controller/
+    │   ├── dto/
+    │   ├── entity/
+    │   ├── repository/
+    │   └── service/
+    │
+    ├── post/                            # Post publishing domain
+    │   ├── controller/
+    │   ├── dto/
+    │   ├── entity/
+    │   ├── repository/
+    │   └── service/
+    │
+    ├── message/                         # Messaging domain
+    │   ├── controller/
+    │   ├── dto/
+    │   ├── entity/
+    │   ├── repository/
+    │   └── service/
+    │
+    ├── comment/                         # Comment hierarchy
+    │   ├── controller/
+    │   ├── dto/
+    │   ├── entity/
+    │   ├── repository/
+    │   └── service/
+    │
+    └── config/                          # Spring configuration
+        ├── SecurityConfig.java
+        ├── JwtAuthenticationFilter.java
+        └── WebConfig.java
 text
 
 ## Tech Stack
