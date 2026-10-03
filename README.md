@@ -615,7 +615,7 @@ nexora/
         ├── SecurityConfig.java
         ├── JwtAuthenticationFilter.java
         └── WebConfig.java
-text
+```
 
 ## Tech Stack
 
