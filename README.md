@@ -728,10 +728,11 @@ The following capabilities represent planned architectural enhancements:
 ## Author
 
 **Platform Architect & Developer**: Shivam Kumar  
-📧 [shivjjj1710@gmail.com](mailto:shivjjj1710@gmail.com)  
-👤 Demo Identity: `@shivam_dev`
+📧 [shivamkumar.dev2006@gmail.com](mailto:shivamkumar.dev2006@gmail.com)  
+💻 GitHub: `CodeByShivam-dev`
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
- esko bhi exact upar wale level me view no conent chnage visully just
+
+
