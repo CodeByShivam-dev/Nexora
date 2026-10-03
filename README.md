@@ -239,6 +239,42 @@ persistent PostgreSQL storage.
 - The server resets its socket watchdog and returns `{ "type": "pong" }`.
 - If a connection drops, buffered outbound messages remain in memory until the handshake completes.
 
+#### Message Lifecycle
+
+```text 
+Client A
+   │
+   │ send_message
+   ▼
+WebSocket Gateway
+   │
+   ├── Authenticate JWT
+   │
+   ├── Validate conversation membership
+   │
+   ├── Persist message
+   │
+   ├── Generate database message ID
+   │
+   ├───────────────► message_ack ─────────────► Client A
+   │
+   └───────────────► new_message ─────────────► Client B
+                                                   │
+                                                   │
+                                                   ▼
+                                          message_delivered
+                                                   │
+                                                   ▼
+                                          WebSocket Gateway
+                                                   │
+                                                   ▼
+                                          message_delivered
+                                                   │
+                                                   ▼
+                                               Client
+
+```
+
 #### Message Persistence & Broadcast
 Outbound payloads transmit conversation IDs, content, optional media URLs, and client-generated UUIDs:
 
