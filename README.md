@@ -1,68 +1,20 @@
-# 🌐 NEXORA — Real-Time Social & Messaging Platform
+# NEXORA
 
-> **A full-stack social networking and real-time communication platform engineered with a decoupled architecture, relational persistence, and bidirectional WebSocket communication. NEXORA provides secure JWT authentication, multi-criteria user discovery, chronological social feeds, interactive media publishing, and persistent 1-to-1 direct messaging with delivery status tracking.**
+NEXORA is a full-stack social networking and real-time communication platform engineered with a decoupled architecture, relational persistence, and bidirectional WebSocket communication. It provides secure JWT authentication, multi-criteria user discovery, chronological social feeds, interactive media publishing, and persistent 1-to-1 direct messaging with delivery status tracking.
 
----
+## Overview
 
-## 📖 Overview
+Modern social platforms require high responsiveness for interactions, persistent relational integrity for user relationships, and low-latency bidirectional channels for direct messaging. NEXORA was architected to address these engineering requirements without reliance on synthetic polling or unauthenticated mock state.
 
-Modern social platforms require high responsiveness for interactions, persistent relational integrity for user relationships, and low-latency bidirectional channels for direct messaging. NEXORA was architected to address these engineering requirements without reliance on synthetic polling or unauthenticated mock state. [1]
+## Key Capabilities
 
----
+- **Identity & Account Lifecycle**: Multi-stage account creation with bcrypt password hashing, 6-digit OTP verification, and JWT session authorization.
+- **Social Graph & Discovery**: Follow/unfollow mechanics, real-time prefix search across usernames and display names, bookmarking, and soft-delete content moderation.
+- **Publishing & Media Feed**: Chronological activity streams supporting multiline text, hashtag tokenization, and photo attachments with client-side preview and server-side disk storage.
+- **Real-Time Direct Messaging**: Persistent 1-to-1 messaging built over WebSockets with ping/pong keepalive heartbeats, optimistic client-side dispatch, and delivery state tracking.
+- **Universal Multi-Device Layout**: Three-column desktop interface, collapsible tablet navigation, and mobile bottom navigation with safe-area spacing.
 
-## 🎯 Why NEXORA?
-
-NEXORA is designed to go beyond typical tutorial-grade social apps by implementing capabilities found in production platforms:
-
-- Secure identity & account lifecycle with OTP and JWT  
-- Social graph with follow/unfollow, search, and bookmarks  
-- Chronological feed with media, hashtags, and interactions  
-- Real-time 1:1 messaging over WebSockets with delivery/read states  
-- Dual transport (WebSocket + HTTP fallback) and heartbeat-guarded connections  
-- Decoupled Node/Express gateway plus an enterprise Spring Boot backend [1]
-
----
-
-## ✨ Key Capabilities
-
-### 🔐 Identity & Account Lifecycle
-
-- Multi-stage account creation with bcrypt password hashing  
-- 6-digit OTP verification with expiry and attempt limiting  
-- JWT session authorization with `Authorization: Bearer` headers  
-- Session auto-provisioning for instant platform exploration [1]
-
-### 🧭 Social Graph & Discovery
-
-- Follow/unfollow mechanics with mutual relationship tracking  
-- Real-time prefix search across usernames and display names  
-- Bookmarking and soft-delete content moderation  
-- Self-follow guards and ownership validation [1]
-
-### 📰 Publishing & Media Feed
-
-- Chronological activity streams with multiline text  
-- Hashtag tokenization and photo attachments  
-- Client-side preview and server-side disk storage  
-- Feed filtering: All Activity, Following Only, Media Only [1]
-
-### 💬 Real-Time Direct Messaging
-
-- Dedicated WebSocket channel mounted on `/ws`  
-- Ping/pong keepalive heartbeats (20s client, 25s server watchdog)  
-- Optimistic client-side dispatch with temporary client IDs  
-- Delivery state tracking: `sent → delivered → read`  
-- Ephemeral typing indicators without database writes [1]
-
-### 📱 Universal Multi-Device Layout
-
-- Three-column desktop interface  
-- Collapsible tablet navigation  
-- Mobile bottom navigation with safe-area spacing [1]
-
----
-
-## 📷 Screenshots / Demo
+## Screenshots / Demo
 
 <p align="center">
   <img src="src/assets/images/hero_social_preview_1790446483047.jpg" alt="NEXORA Platform Overview" width="800" />
@@ -74,11 +26,43 @@ NEXORA is designed to go beyond typical tutorial-grade social apps by implementi
 |---------------------|----------------------|
 | <img src="src/assets/images/post_photo_tech_1790446531677.jpg" alt="Feed & Media Publishing" width="400" /> | <img src="src/assets/images/group_banner_dev_1790446548511.jpg" alt="Community & Engineering Hubs" width="400" /> |
 
----
+## Core Features
 
-## 🏗 Architecture
+### Authentication & Access Control
 
-NEXORA follows a decoupled layered architecture separating the client, API gateway, real-time communication layer, and PostgreSQL persistence. [1]
+- **User Registration**: Input validation, duplicate username/email checks, and salted bcrypt password hashing (10 salt rounds).
+- **Two-Factor OTP Verification**: 6-digit cryptographic verification codes with 10-minute expiry and attempt limiting.
+- **JWT Session Tokens**: Cryptographically signed access tokens transmitting user identities over standard HTTP Authorization: Bearer headers.
+- **Session Auto-Provisioning**: Automated bootstrap session negotiation for instant platform exploration.
+
+### Social Interaction & Graph
+
+- **User Profiles**: Custom avatars, banners, bios, technical interests, work experience, and location metadata.
+- **Relationship Mechanics**: Asymmetric follow/unfollow operations with mutual relationship tracking and self-follow guards.
+- **Chronological News Feed**: Multi-criteria feed filtering (All Activity, Following Only, Media Only) with soft-deleted record exclusion.
+- **Post Interactions**: Real-time post creation, inline content editing, author-only deletion, hashtag extraction, and atomic like/bookmark toggles.
+- **Comment Threads**: Nested comment structures linked directly to root posts with cascading deletions.
+- **User Search**: Server-side SQL pattern-matching (ILIKE) searching across usernames and display names with debounce controls.
+
+### Real-Time Direct Messaging
+
+- **Dedicated WebSocket Channel**: Bidirectional socket server mounted on `/ws` using native frames.
+- **Connection Heartbeats**: 20-second client-side ping intervals paired with 25-second server watchdog sweeps to prevent reverse-proxy timeout drops.
+- **Auto-Reconnection**: Exponential backoff reconnect algorithm with random jitter, re-establishing connections on network reconnection and tab visibility events.
+- **Optimistic UI Dispatch**: Immediate local message rendering with temporary client IDs, reconciling with server database IDs upon acknowledgment.
+- **Delivery & Read States**: Live message status tracking transitions (sent → delivered → read).
+- **Typing Indicators**: Ephemeral typing events broadcast to conversation participants without database disk writes.
+
+### Media & File Management
+
+- **Multipart File Uploads**: Multer disk storage handling profile avatars, cover images, and post attachments under `/uploads`.
+- **MIME & Extension Guards**: Whitelist validation for `.jpg`, `.jpeg`, `.png`, `.webp`, and `.gif` formats with 10MB payload thresholds.
+- **Resilient Fallback**: Client-side FileReader base64 fallback pipeline ensuring media availability across ephemeral execution environments.
+
+## Architecture
+
+NEXORA follows a decoupled layered architecture separating the client,
+API gateway, real-time communication layer, and PostgreSQL persistence.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -88,10 +72,10 @@ NEXORA follows a decoupled layered architecture separating the client, API gatew
 │  ┌───────────────────────────────────────────────────────────────┐  │
 │  │ Web Browser / Mobile Client                                  │  │
 │  │                                                               │  │
-│  │  -  React Components                                           │  │
-│  │  -  Local State / Optimistic UI                                │  │
-│  │  -  REST API Client                                            │  │
-│  │  -  WebSocket Client                                           │  │
+│  │  • React Components                                           │  │
+│  │  • Local State / Optimistic UI                                │  │
+│  │  • REST API Client                                            │  │
+│  │  • WebSocket Client                                           │  │
 │  └───────────────────────────────────────────────────────────────┘  │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
@@ -107,11 +91,11 @@ NEXORA follows a decoupled layered architecture separating the client, API gatew
 │  ┌──────────────────────────────┐  ┌─────────────────────────────┐  │
 │  │ REST API Gateway             │  │ WebSocket Server            │  │
 │  │                              │  │                             │  │
-│  │ -  JWT Authentication         │  │ -  Connection Registry       │  │
-│  │ -  Request Validation         │  │ -  Authentication             │  │
-│  │ -  Rate Limiting              │  │ -  Heartbeat / Ping-Pong     │  │
-│  │ -  File Uploads (Multer)      │  │ -  Message Routing           │  │
-│  │ -  API Controllers            │  │ -  Typing Events             │  │
+│  │ • JWT Authentication         │  │ • Connection Registry       │  │
+│  │ • Request Validation         │  │ • Authentication             │  │
+│  │ • Rate Limiting              │  │ • Heartbeat / Ping-Pong     │  │
+│  │ • File Uploads (Multer)      │  │ • Message Routing           │  │
+│  │ • API Controllers            │  │ • Typing Events             │  │
 │  └──────────────┬───────────────┘  └──────────────┬──────────────┘  │
 │                 │                                 │                 │
 │                 └────────────────┬────────────────┘                 │
@@ -129,46 +113,45 @@ NEXORA follows a decoupled layered architecture separating the client, API gatew
 │  │  users   │  │  posts   │  │ conversations│  │   messages   │   │
 │  └──────────┘  └──────────┘  └──────────────┘  └──────────────┘   │
 │                                                                     │
-│  -  Foreign Keys                                                     │
-│  -  Constraints                                                      │
-│  -  Indexes                                                          │
-│  -  Transactions                                                      │
-│  -  Connection Pooling                                               │
+│  • Foreign Keys                                                     │
+│  • Constraints                                                      │
+│  • Indexes                                                          │
+│  • Transactions                                                      │
+│  • Connection Pooling                                               │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### System Component Responsibilities
 
 #### Client Tier (Frontend SPA)
-
-- Built with React 19, TypeScript, Tailwind CSS, and Framer Motion.  
-- Manages local client state, optimistic UI mutations, and persistent offline mirrors in `localStorage`.  
-- Maintains a single WebSocket connection singleton with automatic lifecycle management and queue buffering. [1]
+- Built with React 19, TypeScript, Tailwind CSS, and Framer Motion.
+- Manages local client state, optimistic UI mutations, and persistent offline mirrors in localStorage.
+- Maintains a single WebSocket connection singleton with automatic lifecycle management and queue buffering.
 
 #### Gateway Tier (Express & Vite Middleware)
-
-- Serves static assets, compiled bundles, and uploaded media files.  
-- Enforces security boundaries: token verification, route rate limiting, and request sanitization.  
-- Exposes RESTful endpoints conforming to standard HTTP status codes. [1]
+- Serves static assets, compiled bundles, and uploaded media files.
+- Enforces security boundaries: token verification, route rate limiting, and request sanitization.
+- Exposes RESTful endpoints conforming to standard HTTP status codes.
 
 #### Real-Time Tier (WebSocket Server)
-
-- Manages active socket instances via a synchronized multi-socket map (`userSockets: Map<string, WebSocket[]>`).  
-- Authenticates socket sessions via query parameters or explicit `{ type: 'auth', token }` handshake payloads.  
-- Forwards delivery acknowledgments and broadcasts events to targeted client sessions. [1]
+- Manages active socket instances via a synchronized multi-socket map (`userSockets: Map<string, WebSocket[]>`).
+- Authenticates socket sessions via query parameters or explicit `{ type: 'auth', token }` handshake payloads.
+- Forwards delivery acknowledgments and broadcasts events to targeted client sessions.
 
 #### Persistence Tier (PostgreSQL)
+- Relational database schema with primary foreign key constraints and cascade rules.
+- Connection pooling managed through `pg.Pool` utilizing parameterized queries to eliminate SQL injection vulnerabilities.
 
-- Relational database schema with primary foreign key constraints and cascade rules.  
-- Connection pooling managed through `pg.Pool` utilizing parameterized queries to eliminate SQL injection vulnerabilities. [1]
+> **Note**: The repository also includes a complete enterprise Java 17 / Spring Boot 3.3.4 microservice architecture located under `src/main/java/com/nexora` with Spring Security, Spring Data JPA, and Flyway migrations (`pom.xml`).
 
-> **Note**: The repository also includes a complete enterprise Java 17 / Spring Boot 3.3.4 microservice architecture located under `src/main/java/com/nexora` with Spring Security, Spring Data JPA, and Flyway migrations (`pom.xml`). [1]
 
----
+Then replace your **Real-Time Messaging Architecture** section with:
 
-## 💬 Real-Time Messaging Architecture
+```text
+## Real-Time Messaging Architecture
 
-The direct messaging subsystem separates WebSocket transport from persistent PostgreSQL storage. [1]
+The direct messaging subsystem separates WebSocket transport from
+persistent PostgreSQL storage.
 
 ```text
 ┌───────────────┐
@@ -187,10 +170,10 @@ The direct messaging subsystem separates WebSocket transport from persistent Pos
 │  ┌─────────────────────────────────┐  │
 │  │ WebSocket Handler               │  │
 │  │                                 │  │
-│  │ -  Authenticate JWT              │  │
-│  │ -  Validate conversation         │  │
-│  │ -  Validate message payload      │  │
-│  │ -  Apply rate limits             │  │
+│  │ • Authenticate JWT              │  │
+│  │ • Validate conversation         │  │
+│  │ • Validate message payload      │  │
+│  │ • Apply rate limits             │  │
 │  └───────────────┬─────────────────┘  │
 │                  │                    │
 │                  │ 2. Persist         │
@@ -244,8 +227,7 @@ The direct messaging subsystem separates WebSocket transport from persistent Pos
 ### Protocol & Flow Specifications
 
 #### Authentication Handshake
-
-1. The client opens a connection to `/ws?token=<JWT>`.  
+1. The client opens a connection to `/ws?token=<JWT>`.
 2. The server decodes the token claims and binds the active socket to the internal user registry:
 
 ```json
@@ -253,10 +235,9 @@ The direct messaging subsystem separates WebSocket transport from persistent Pos
 ```
 
 #### Heartbeat & Keepalive Protocol
-
-- Every 20 seconds, the client transmits `{ "type": "ping" }`.  
-- The server resets its socket watchdog and returns `{ "type": "pong" }`.  
-- If a connection drops, buffered outbound messages remain in memory until the handshake completes. [1]
+- Every 20 seconds, the client transmits `{ "type": "ping" }`.
+- The server resets its socket watchdog and returns `{ "type": "pong" }`.
+- If a connection drops, buffered outbound messages remain in memory until the handshake completes.
 
 #### Message Lifecycle
 
@@ -290,11 +271,11 @@ WebSocket Gateway
                                           message_delivered
                                                    │
                                                    ▼
-                                               Client A
+                                               Client
+
 ```
 
 #### Message Persistence & Broadcast
-
 Outbound payloads transmit conversation IDs, content, optional media URLs, and client-generated UUIDs:
 
 ```json
@@ -306,31 +287,26 @@ Outbound payloads transmit conversation IDs, content, optional media URLs, and c
 }
 ```
 
-1. The gateway writes the record into the `messages` table via a database transaction.  
-2. The gateway emits a `message_ack` frame back to Client A.  
-3. If Client B is registered in `userSockets`, the gateway pushes `new_message` directly to Client B's active sockets.  
-4. When Client B renders the frame, it acknowledges delivery, triggering a status update to Client A. [1]
+1. The gateway writes the record into the `messages` table via a database transaction.
+2. The gateway emits a `message_ack` frame back to Client A.
+3. If Client B is registered in `userSockets`, the gateway pushes `new_message` directly to Client B's active sockets.
+4. When Client B renders the frame, it acknowledges delivery, triggering a status update to Client A.
 
 #### Dual Transport Redundancy
+- If the WebSocket channel drops unexpectedly, `ApiService` routes outbound messages via HTTP POST `/api/v1/conversations/:id/messages` without interrupting user composition.
 
-- If the WebSocket channel drops unexpectedly, `ApiService` routes outbound messages via HTTP POST `/api/v1/conversations/:id/messages` without interrupting user composition. [1]
+## Security
 
----
-
-## 🔒 Security
-
-NEXORA applies defense-in-depth principles across authentication, authorization, data access, and input handling. [1]
-
-- **Password Hashing**: Passwords stored as salted hashes using `bcryptjs` with 10 salt rounds. Plaintext credentials are never persisted.  
-- **Stateless Authorization**: Protected endpoints require a valid JSON Web Token passed via `Authorization: Bearer <token>`.  
-- **Parameterized SQL Execution**: All database queries executed through parameterized placeholders (`$1`, `$2`, ...) via `pg.Pool`, mitigating SQL injection risks.  
-- **Resource Ownership Validation**: Mutation requests (deleting posts, updating profiles) strictly verify that `author_id === req.user.userId`.  
-- **Conversation Access Control**: Membership validation checks verify that users belong to a conversation prior to reading or transmitting messages.  
-- **Input Sanitization**: User-submitted strings pass through script-tag sanitizers and length-capping routines. [1]
+- **Password Hashing**: Passwords stored as salted hashes using `bcryptjs` with 10 salt rounds. Plaintext credentials are never persisted.
+- **Stateless Authorization**: Protected endpoints require a valid JSON Web Token passed via `Authorization: Bearer <token>`.
+- **Parameterized SQL Execution**: All database queries executed through parameterized placeholders (`$1`, `$2`, ...) via `pg.Pool`, mitigating SQL injection risks.
+- **Resource Ownership Validation**: Mutation requests (deleting posts, updating profiles) strictly verify that `author_id === req.user.userId`.
+- **Conversation Access Control**: Membership validation checks verify that users belong to a conversation prior to reading or transmitting messages.
+- **Input Sanitization**: User-submitted strings pass through script-tag sanitizers and length-capping routines.
 
 ### Granular Rate Limiting
 
-In-memory rate limiting applied per route category: [1]
+In-memory rate limiting applied per route category:
 
 | Endpoint Category | Rate Limit |
 |------------------|------------|
@@ -340,11 +316,11 @@ In-memory rate limiting applied per route category: [1]
 | Direct Messaging | 30 requests / min |
 | Search | 60 requests / min |
 
----
 
-## 🗄 Database Design
+## Database Design
 
-NEXORA uses PostgreSQL with foreign keys, composite constraints, indexes, and cascade rules to maintain relational integrity across users, posts, interactions, and conversations. [1]
+NEXORA uses PostgreSQL with foreign keys, composite constraints,
+indexes, and cascade rules to maintain relational integrity.
 
 ```text
                          ┌─────────────────┐
@@ -454,11 +430,7 @@ NEXORA uses PostgreSQL with foreign keys, composite constraints, indexes, and ca
 | `conversation_members` | Join table binding `user_id` to `conversation_id` with composite primary constraints and read receipt timestamps. |
 | `messages` | Chat messages storing `conversation_id`, `sender_id`, `content`, `media_url`, `client_message_id`, and delivery timestamps. |
 
----
-
-## 📡 API Overview
-
-NEXORA exposes a versioned REST API under `/api/v1` for authentication, social operations, and messaging, with JWT-based access control. [1]
+## API Overview
 
 ### Authentication
 
@@ -511,9 +483,7 @@ NEXORA exposes a versioned REST API under `/api/v1` for authentication, social o
 | POST | `/api/v1/users/me/avatar` | Upload and set profile avatar | Yes |
 | POST | `/api/v1/users/me/cover` | Upload and set profile header cover | Yes |
 
----
-
-## 🛰 WebSocket Endpoints
+## WebSocket Endpoints
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -545,11 +515,7 @@ NEXORA exposes a versioned REST API under `/api/v1` for authentication, social o
 | **Messages Read** | `{ "type": "messages_read", "conversationId": "12", "readerId": "2", "readAt": "..." }` |
 | **Typing Status** | `{ "type": "typing", "conversationId": "12", "userId": "2", "isTyping": true }` |
 
----
-
-## 📂 Project Structure
-
-NEXORA includes both a Node.js/Express gateway for real-time operations and a complete Spring Boot 3 backend under `src/main/java/com/nexora` for enterprise microservice patterns. [1]
+## Project Structure
 
 ```text
 nexora/
@@ -651,9 +617,7 @@ nexora/
         └── WebConfig.java
 ```
 
----
-
-## ⚙ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -670,18 +634,14 @@ nexora/
 | **Authentication** | JSON Web Tokens (jsonwebtoken), bcryptjs |
 | **File Processing** | Multer Disk Storage |
 
----
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js**: v18.0.0 or higher  
-- **npm or bun**: npm v9+ or bun v1.1+  
-- **PostgreSQL**: Accessible PostgreSQL instance or Neon database URL  
-- **(Optional for Java Backend)**: JDK 17+ and Apache Maven 3.8+  
-
-A managed Neon PostgreSQL instance is recommended for quick setup, but any PostgreSQL 14+ instance is supported. [1]
+- **Node.js**: v18.0.0 or higher
+- **npm or bun**: npm v9+ or bun v1.1+
+- **PostgreSQL**: Accessible PostgreSQL instance or Neon database URL
+- **(Optional for Java Backend)**: JDK 17+ and Apache Maven 3.8+
 
 ### Setup Instructions
 
@@ -720,7 +680,7 @@ npm install
 npm run dev
 ```
 
-The application will initialize database tables, execute migrations, and serve the application on `http://localhost:3000`. [1]
+The application will initialize database tables, execute migrations, and serve the application on `http://localhost:3000`.
 
 5. **(Optional) Running the Spring Boot Backend**:
 
@@ -739,52 +699,39 @@ mvn spring-boot:run
 | `GEMINI_API_KEY` | No | Google GenAI API key for optional smart assistant features |
 | `APP_URL` | No | Base application host URL for absolute URL generation |
 
----
+## Engineering Highlights
 
-## 🏆 Engineering Highlights
+- **Dual-Delivery Chat Pipeline**: Employs WebSockets as the primary sub-millisecond transport for messages, while simultaneously supporting transparent HTTP API fallbacks if client sockets experience transient degradation.
+- **Heartbeat-Guarded Socket Connections**: Implements bi-directional keepalive heartbeats (ping/pong), ensuring reverse proxies and container orchestrators do not drop idle communication sessions.
+- **Idempotent Socket Processing**: Client message UUIDs (`clientMessageId`) prevent duplicate message persistence during socket reconnections and network retries.
+- **Intelligent Feed Reconciliation**: Feed synchronization merges remote server payloads with locally composed content, preserving unsynchronized and optimistic records during background polling.
+- **Column-Level Size Hardening**: Schema migrations dynamically enforce TEXT data types across `media_url` and `avatar` properties, permitting both remote URLs and inline data URIs without truncation.
+- **Zero-Polling Active Presence**: Uses connection registry tracking (`userSockets.has(userId)`) to provide accurate presence indicators without database query loops.
 
-The following design choices distinguish NEXORA from typical tutorial-grade social apps. [1]
+## Design & UX
 
-- **Dual-Delivery Chat Pipeline**: WebSockets as the primary sub-millisecond transport for messages, with transparent HTTP API fallbacks if client sockets experience transient degradation.  
-- **Heartbeat-Guarded Socket Connections**: Bi-directional keepalive heartbeats (ping/pong), ensuring reverse proxies and container orchestrators do not drop idle communication sessions.  
-- **Idempotent Socket Processing**: Client message UUIDs (`clientMessageId`) prevent duplicate message persistence during socket reconnections and network retries.  
-- **Intelligent Feed Reconciliation**: Feed synchronization merges remote server payloads with locally composed content, preserving unsynchronized and optimistic records during background polling.  
-- **Column-Level Size Hardening**: Schema migrations dynamically enforce TEXT data types across `media_url` and `avatar` properties, permitting both remote URLs and inline data URIs without truncation.  
-- **Zero-Polling Active Presence**: Uses connection registry tracking (`userSockets.has(userId)`) to provide accurate presence indicators without database query loops. [1]
+- **Responsive Density**: Automatically adapts layout structure from a compact three-column engineering dashboard on desktop (≥ 1024px) to an icon-only navigation mode on tablet, and a thumb-friendly bottom bar on mobile (< 768px).
+- **Obsidian Palette**: Dark mode styling built with deliberate contrast ratios, clean border delineations, and monospace accents for numeric telemetry.
+- **Micro-Interactions**: Interactive bounce animations on like toggles, bookmark triggers, and skeleton loading states during feed fetch sequences.
+- **Accessible State Handling**: Distinct visual representations for empty states, missing conversation histories, connection drops, and validation errors.
 
----
+## Future Improvements
 
-## 🎨 Design & UX
+The following capabilities represent planned architectural enhancements:
 
-The interface is engineered for dense information display on desktop while remaining thumb-friendly on mobile devices. [1]
+- **Distributed Socket Pub/Sub**: Integration of Redis Pub/Sub to scale WebSocket connections horizontally across multi-node clusters.
+- **S3 / Cloud Object Storage**: Migration of uploaded media from local container disk storage to Cloud Storage buckets (S3 / GCS).
+- **Group Conversations**: Expanding the conversation schema to support multi-party group channels and member role governance.
+- **Push Notification Workers**: Web Push API workers to deliver offline notification badges and background messaging alerts.
+- **Message Reactions**: Polymorphic reaction structures for chat messages.
 
-- **Responsive Density**: Automatically adapts layout structure from a compact three-column engineering dashboard on desktop (≥ 1024px) to an icon-only navigation mode on tablet, and a thumb-friendly bottom bar on mobile (< 768px).  
-- **Obsidian Palette**: Dark mode styling built with deliberate contrast ratios, clean border delineations, and monospace accents for numeric telemetry.  
-- **Micro-Interactions**: Interactive bounce animations on like toggles, bookmark triggers, and skeleton loading states during feed fetch sequences.  
-- **Accessible State Handling**: Distinct visual representations for empty states, missing conversation histories, connection drops, and validation errors. [1]
-
----
-
-## 📈 Future Improvements
-
-The following capabilities represent planned architectural enhancements to scale NEXORA into a multi-node, production-grade social infrastructure. [1]
-
-- **Distributed Socket Pub/Sub**: Integration of Redis Pub/Sub to scale WebSocket connections horizontally across multi-node clusters.  
-- **S3 / Cloud Object Storage**: Migration of uploaded media from local container disk storage to Cloud Storage buckets (S3 / GCS).  
-- **Group Conversations**: Expanding the conversation schema to support multi-party group channels and member role governance.  
-- **Push Notification Workers**: Web Push API workers to deliver offline notification badges and background messaging alerts.  
-- **Message Reactions**: Polymorphic reaction structures for chat messages. [1]
-
----
-
-## 👨‍💻 Author
+## Author
 
 **Platform Architect & Developer**: Shivam Kumar  
 📧 [shivjjj1710@gmail.com](mailto:shivjjj1710@gmail.com)  
 👤 Demo Identity: `@shivam_dev`
 
----
+## License
 
-## 📜 License
-
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+ esko bhi exact upar wale level me view no conent chnage visully just
