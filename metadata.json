@@ -1,0 +1,6 @@
+{
+  "name": "NEXORA",
+  "description": "Next-Generation Social Networking Platform — Connect. Create. Discover.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
