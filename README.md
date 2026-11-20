@@ -9,6 +9,11 @@ Built using modern frontend and backend technologies, NEXORA brings together soc
 
 ---
 
+## 🚀 Live Demo
+
+🔗 **[Visit NEXORA](https://nexorasocialmedi.netlify.app/)**
+
+
 ## ✨ Core Features
 
 ### 🔐 Authentication & Account Management
